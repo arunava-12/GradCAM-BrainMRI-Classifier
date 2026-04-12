@@ -1,29 +1,102 @@
-<!-- templates/result.html -->
 <!DOCTYPE html>
 <html>
 <head>
     <title>Result</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .confidence-bar {
+            height: 20px;
+            border-radius: 10px;
+        }
+        .fixed-img {
+        width: 300px;
+        height: 300px;
+        object-fit: contain;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Analysis Result</h1>
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    {% if uploaded_image %}
-                    <img src="{{ url_for('static', filename='uploads/' + uploaded_image) }}" 
-                         class="card-img-top" 
-                         style="max-height: 400px; object-fit: contain;">
-                    {% endif %}
-                    <div class="card-body text-center">
-                        <h2 class="card-title">{{ result }}</h2>
-                        <p class="h4">Confidence: {{ confidence }}%</p>
-                        <a href="/" class="btn btn-primary mt-3">Analyze Another Image</a>
-                    </div>
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">🧠 MRI Analysis Result</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow p-3">
+
+                <div class="row mb-3">
+    {% if uploaded_image %}
+    <div class="col-md-6 mb-3">
+        <h5>Original MRI</h5>
+        <img src="{{ url_for('static', filename='uploads/' + uploaded_image) }}" class="fixed-img">
+    </div>
+    {% endif %}
+
+    {% if gradcam_image %}
+    <div class="col-md-6">
+        <h5>🔥 Grad-CAM</h5>
+        <img src="{{ url_for('static', filename='uploads/' + gradcam_image) }}" class="fixed-img">
+    </div>
+    {% endif %}
+</div>
+
+                <div class="card-body text-center">
+
+                    <!-- 🔥 Main Prediction -->
+                    <h2 class="card-title 
+                        {% if result == 'notumor' %}text-success
+                        {% else %}text-danger{% endif %}">
+                        {{ result }}
+                    </h2>
+
+                    <p class="h4">
+                        Confidence: <strong>{{ confidence }}%</strong>
+                    </p>
+
+                    <hr>
+
+                    <!-- 📊 Probabilities -->
+                    <h4>Class Probabilities</h4>
+
+                    {% for label, prob in probabilities.items() %}
+                        <div class="text-left mt-2">
+                            <strong class="{% if label == result %}text-success{% endif %}">{{ label }}</strong> - {{ (prob * 100) | round(2) }}%
+                            <div class="progress">
+                                <div class="progress-bar 
+                                    {% if label == result %}bg-success{% else %}bg-secondary{% endif %}"
+                                    role="progressbar"
+                                    style="width: {{ (prob * 100) | round(2) }}%;"
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <hr>
+
+                    <!-- 🧠 Fuzzy Interpretation (simple version) -->
+                    <h5>
+                        {% if confidence > 90 %}
+                            🔥 Very High Confidence
+                        {% elif confidence > 75 %}
+                            ✅ High Confidence
+                        {% elif confidence > 60 %}
+                            ⚠️ Moderate Confidence
+                        {% else %}
+                            ❗ Low Confidence
+                        {% endif %}
+                    </h5>
+
+                    <a href="/" class="btn btn-primary mt-3">
+                        Analyze Another Image
+                    </a>
+
                 </div>
             </div>
+
         </div>
     </div>
+</div>
+
 </body>
 </html>
