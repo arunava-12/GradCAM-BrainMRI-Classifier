@@ -73,7 +73,7 @@ Two interfaces are provided:
 
 3. **Install dependencies**
    ```bash
-   pip install tensorflow flask streamlit opencv-python pillow numpy
+   pip install -r requirements.txt
    ```
 
 ### Running the Applications
